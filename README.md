@@ -8,7 +8,7 @@ Before you `println("things")`:
 things
 ```
 
-Now you Echo `Echo.info("beautiful things")`
+Now you Echo `Echo.info("beautiful things")`:
 
 ```
 💡 [11:05:58.013] [AppDelegate.swift:21]	beautiful things
