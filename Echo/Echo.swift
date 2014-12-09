@@ -139,55 +139,55 @@ public struct Echo {
         
     }
 
-    public func trace<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(message, .Trace, file, function, line)
+    public func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        log(value, .Trace, file, function, line)
     }
-    public static func trace<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(message, .Trace, file, function, line)
+    public static func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        sharedInstance.log(value, .Trace, file, function, line)
     }
-    public func debug<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(message, .Debug, file, function, line)
+    public func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        log(value, .Debug, file, function, line)
     }
-    public static func debug<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(message, .Debug, file, function, line)
+    public static func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        sharedInstance.log(value, .Debug, file, function, line)
     }
-    public func info<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(message, .Info, file, function, line)
+    public func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        log(value, .Info, file, function, line)
     }
-    public static func info<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(message, .Info, file, function, line)
+    public static func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        sharedInstance.log(value, .Info, file, function, line)
     }
-    public func warn<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(message, .Warn, file, function, line)
+    public func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        log(value, .Warn, file, function, line)
     }
-    public static func warn<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(message, .Warn, file, function, line)
+    public static func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        sharedInstance.log(value, .Warn, file, function, line)
     }
-    public func error<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(message, .Error, file, function, line)
+    public func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        log(value, .Error, file, function, line)
     }
-    public static func error<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(message, .Error, file, function, line)
+    public static func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        sharedInstance.log(value, .Error, file, function, line)
     }
-    public func fatal<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(message, .Fatal, file, function, line)
+    public func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        log(value, .Fatal, file, function, line)
     }
-    public static func fatal<T>(message: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(message, .Fatal, file, function, line)
+    public static func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
+        sharedInstance.log(value, .Fatal, file, function, line)
     }
 
-    private func log<T>(message: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
+    private func log<T>(value: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
         if level >= self.level {
             dateFormatter.dateFormat = dateFormat
 
-            var msg = format
-            msg = msg.stringByReplacingOccurrencesOfString("\(EchoComponent.DateTime)", withString: dateFormatter.stringFromDate(NSDate()))
-            msg = msg.stringByReplacingOccurrencesOfString("\(EchoComponent.Flag)", withString: levelFlags[level] ?? "\(level)")
-            msg = msg.stringByReplacingOccurrencesOfString("\(EchoComponent.Filename)", withString: "\(file)".lastPathComponent)
-            msg = msg.stringByReplacingOccurrencesOfString("\(EchoComponent.Function)", withString: "\(function)")
-            msg = msg.stringByReplacingOccurrencesOfString("\(EchoComponent.Line)", withString: "\(line)")
-            msg = msg.stringByReplacingOccurrencesOfString("\(EchoComponent.Message)", withString: "\(message)")
-            println(msg)
+            var log = format
+            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.DateTime)", withString: dateFormatter.stringFromDate(NSDate()))
+            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Flag)", withString: levelFlags[level] ?? "\(level)")
+            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Filename)", withString: "\(file)".lastPathComponent)
+            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Function)", withString: "\(function)")
+            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Line)", withString: "\(line)")
+            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Message)", withString: "\(value)")
+            println(log)
         }
     }
 
