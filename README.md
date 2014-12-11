@@ -17,6 +17,7 @@ Now you Echo `Echo.info("beautiful things")`:
 ## Features
 
 - [x] Log levels
+- [x] Selective code execution
 - [x] Customizable log format
 
 ---
@@ -73,6 +74,24 @@ Echo.level = .Warn
 You will only show *warn*, *error* and *fatal* messages.
 
 Echo also provide the possiblity to disable message logging by setting Echo level to `.Off`.
+
+### Selective code execution
+
+Echo `trace`, `debug`, `info`, `warn`, `error` and `fatal` methods can also be used to limit code execution in the same way you limit log printing.
+
+```swift
+Echo.trace({ () -> Double
+  let AB = 1.0
+  let AC = 2.0
+  return sqrt(AB*AB + AC*AC) // BC
+})
+```
+
+If Echo level is `<=` .Trace, Echo print the returned value to the console.
+
+```
+💊 [11:06:03.753] [AppDelegate.swift:20]  2.23606797749979
+```
 
 ### Customize Echo format
 
