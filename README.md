@@ -113,7 +113,7 @@ Echo.levelFlags = [
   .Info: "💡",
   .Warn: "⚠️",
   .Error: "❌", 
-  Fatal: "💣",
+  .Fatal: "💣",
   .Off: "😶" // Just for fun
 ]
 ```
