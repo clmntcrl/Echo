@@ -103,6 +103,7 @@ public struct Echo {
             sharedInstance.format = newValue
         }
     }
+    private var dateFormatter = NSDateFormatter()
     public var dateFormat = "HH:mm:ss.SSS"
     public static var dateFormat: String {
         get {
@@ -112,8 +113,6 @@ public struct Echo {
             sharedInstance.dateFormat = newValue
         }
     }
-
-    private var dateFormatter = NSDateFormatter()
 
     public var level = EchoLevel.Trace
     public static var level: EchoLevel {
@@ -140,55 +139,63 @@ public struct Echo {
     }
 
     public func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(value, .Trace, file, function, line)
+        echo(value, .Trace, file, function, line)
     }
     public static func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(value, .Trace, file, function, line)
+        sharedInstance.echo(value, .Trace, file, function, line)
     }
     public func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(value, .Debug, file, function, line)
+        echo(value, .Debug, file, function, line)
     }
     public static func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(value, .Debug, file, function, line)
+        sharedInstance.echo(value, .Debug, file, function, line)
     }
     public func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(value, .Info, file, function, line)
+        echo(value, .Info, file, function, line)
     }
     public static func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(value, .Info, file, function, line)
+        sharedInstance.echo(value, .Info, file, function, line)
     }
     public func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(value, .Warn, file, function, line)
+        echo(value, .Warn, file, function, line)
     }
     public static func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(value, .Warn, file, function, line)
+        sharedInstance.echo(value, .Warn, file, function, line)
     }
     public func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(value, .Error, file, function, line)
+        echo(value, .Error, file, function, line)
     }
     public static func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(value, .Error, file, function, line)
+        sharedInstance.echo(value, .Error, file, function, line)
     }
     public func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        log(value, .Fatal, file, function, line)
+        echo(value, .Fatal, file, function, line)
     }
     public static func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.log(value, .Fatal, file, function, line)
+        sharedInstance.echo(value, .Fatal, file, function, line)
     }
 
-    private func log<T>(value: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
-        if level >= self.level {
-            dateFormatter.dateFormat = dateFormat
-
-            var log = format
-            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.DateTime)", withString: dateFormatter.stringFromDate(NSDate()))
-            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Flag)", withString: levelFlags[level] ?? "\(level)")
-            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Filename)", withString: "\(file)".lastPathComponent)
-            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Function)", withString: "\(function)")
-            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Line)", withString: "\(line)")
-            log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Message)", withString: "\(value)")
-            println(log)
+    private func isLoggable(level: EchoLevel) -> Bool {
+        return level >= self.level
+    }
+    private func echo<T>(value: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
+        if isLoggable(level) {
+            log(value, level, file, function, line)
         }
+    }
+    private func log<T>(value: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
+        dateFormatter.dateFormat = dateFormat // Dammit! Currently we can't have structs where a computed property and a static
+                                              // computed property have the same name 🔪🚑🔫💣💀!!!
+                                              // TODO: 💩 Clean that ASAP
+
+        var log = format
+        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.DateTime)", withString: dateFormatter.stringFromDate(NSDate()))
+        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Flag)", withString: levelFlags[level] ?? "\(level)")
+        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Filename)", withString: "\(file)".lastPathComponent)
+        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Function)", withString: "\(function)")
+        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Line)", withString: "\(line)")
+        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Message)", withString: "\(value)")
+        println(log)
     }
 
 }
