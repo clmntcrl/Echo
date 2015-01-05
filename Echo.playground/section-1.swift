@@ -13,8 +13,20 @@ var echo = Echo()
 
 // Customize its log format
 
-echo.format = "\(EchoComponent.Flag) [\(EchoComponent.DateTime)] [\(EchoComponent.Filename):\(EchoComponent.Line)][\(EchoComponent.Function)] \(EchoComponent.Message)"
-echo.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
+echo.format = [
+    .Separator("("),
+    .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
+    .Separator(") ["),
+    .Datetime(format: "yyyy-MM-dd HH:mm:ss.SSS"),
+    .Separator("] ["),
+    .Filename,
+    .Separator(":"),
+    .Line,
+    .Separator("]["),
+    .Function,
+    .Separator("] "),
+    .Message
+]
 
 // Change log Level
 

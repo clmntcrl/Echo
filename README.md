@@ -11,7 +11,7 @@ things
 Now you Echo `Echo.info("beautiful things")`:
 
 ```
-💡 [11:05:58.013] [AppDelegate.swift:21]	beautiful things
+💡 [11:05:58.013] [AppDelegate.swift:21] beautiful things
 ```
 
 ## Features
@@ -57,12 +57,12 @@ Echo.trace("Fatal")
 Because Echo level is set to `.Trace` by default, all these logs are print to the console.
 
 ```
-💊 [11:06:03.753] [AppDelegate.swift:20]  Trace
-☕️ [11:06:03.754] [AppDelegate.swift:21]  Debug
-💡 [11:06:03.754] [AppDelegate.swift:22]  Info
-⚠️ [11:06:03.755] [AppDelegate.swift:23]  Warn
-❌ [11:06:03.755] [AppDelegate.swift:23]  Error
-💣 [11:06:03.755] [AppDelegate.swift:25]  Fatal
+💊 [11:06:03.753] [AppDelegate.swift:20] Trace
+☕️ [11:06:03.754] [AppDelegate.swift:21] Debug
+💡 [11:06:03.754] [AppDelegate.swift:22] Info
+⚠️ [11:06:03.755] [AppDelegate.swift:23] Warn
+❌ [11:06:03.755] [AppDelegate.swift:23] Error
+💣 [11:06:03.755] [AppDelegate.swift:25] Fatal
 ```
 
 Naturally you can change Echo level to print only messages with a log level `>=`. So if you set Echo level like that:
@@ -90,12 +90,12 @@ Echo.trace({ () -> Double
 If Echo level is `<=` .Trace, Echo print the returned value to the console.
 
 ```
-💊 [11:06:03.753] [AppDelegate.swift:20]  2.23606797749979
+💊 [11:06:03.753] [AppDelegate.swift:20] 2.23606797749979
 ```
 
 ### Customize Echo format
 
-Echo format is a string that define how Echo logs are print to the console. This string is composed by Echo components:
+Echo format is an array of `EchoComponent` that define how Echo logs are print to the console.
 
 * `EchoComponent.DateTime`: Echo date and time.
 * `EchoComponent.Flag`: Flag that identify Echo level.
@@ -103,37 +103,21 @@ Echo format is a string that define how Echo logs are print to the console. This
 * `EchoComponent.Function`: Caller's function name.
 * `EchoComponent.Line`: Caller's line.
 * `EchoComponent.Message`: Message to print.
+* `EchoComponent.Separator`: Separator.
 
 By default Echo format is set to:
 
 ```swift
-Echo.format = "\(EchoComponent.Flag) [\(EchoComponent.DateTime)] " + 
-  "[\(EchoComponent.Filename):\(EchoComponent.Line)]\t\(EchoComponent.Message)"
-```
-
-#### Date format
-
-Date format is define by a string as it is for `NSDateFormatter`.
-
-By default Echo uses the date format below:
-
-```swift
-Echo.dateFormat = "HH:mm:ss.SSS"
-```
-
-#### Level flags
-
-Level flags identify each log level by a string and because it's more fun with Emoji, its default value is:
-
-```swift
-Echo.levelFlags = [
-  EchoLevel.Trace: "💊",
-  .Debug:  "☕️",
-  .Info: "💡",
-  .Warn: "⚠️",
-  .Error: "❌", 
-  .Fatal: "💣",
-  .Off: "😶" // Just for fun
+Echo.format = [
+  .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
+  .Separator(" ["),
+  .Datetime(format: "HH:mm:ss.SSS"),
+  .Separator("] ["),
+  .Filename,
+  .Separator(":"),
+  .Line,
+  .Separator("] "),
+  .Message
 ]
 ```
 

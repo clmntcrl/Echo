@@ -10,6 +10,10 @@
 import Foundation
 
 
+// MARK: Echo types
+
+public typealias EchoFlag = String
+
 // MARK: Echo levels
 
 public enum EchoLevel: UInt, Comparable {
@@ -31,60 +35,17 @@ public func ==(lhs: EchoLevel, rhs: EchoLevel) -> Bool {
     return lhs.rawValue == rhs.rawValue
 }
 
-extension EchoLevel: Printable {
-
-    public var description: String {
-        switch self {
-        case Trace:
-            return "[trace]"
-        case Debug:
-            return "[debug]"
-        case Info:
-            return "[info]"
-        case Warn:
-            return "[warn]"
-        case Error:
-            return "[error]"
-        case Fatal:
-            return "[fatal]"
-        case Off:
-            return "[off]"
-        }
-    }
-
-}
-
 // MARK: Echo components
 
 public enum EchoComponent {
 
-    case DateTime
-    case Flag
+    case Datetime(format: String)
+    case Flag(flags: [EchoLevel: EchoFlag])
     case Filename
     case Function
     case Line
     case Message
-
-}
-
-extension EchoComponent: Printable {
-
-    public var description: String {
-        switch self {
-        case .DateTime:
-            return "[datetime]"
-        case .Flag:
-            return "[flag]"
-        case .Filename:
-            return "[filename]"
-        case .Function:
-            return "[function]"
-        case .Line:
-            return "[line]"
-        case .Message:
-            return "[message]"
-        }
-    }
+    case Separator(String)
 
 }
 
@@ -94,8 +55,18 @@ public struct Echo {
 
     private static var sharedInstance = Echo()
 
-    public var format = "\(EchoComponent.Flag) [\(EchoComponent.DateTime)] [\(EchoComponent.Filename):\(EchoComponent.Line)]\t\(EchoComponent.Message)"
-    public static var format: String {
+    public var format: [EchoComponent] = [
+        .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
+        .Separator(" ["),
+        .Datetime(format: "HH:mm:ss.SSS"),
+        .Separator("] ["),
+        .Filename,
+        .Separator(":"),
+        .Line,
+        .Separator("] "),
+        .Message
+    ]
+    public static var format: [EchoComponent] {
         get {
             return sharedInstance.format
         }
@@ -104,15 +75,6 @@ public struct Echo {
         }
     }
     private var dateFormatter = NSDateFormatter()
-    public var dateFormat = "HH:mm:ss.SSS"
-    public static var dateFormat: String {
-        get {
-            return sharedInstance.dateFormat
-        }
-        set {
-            sharedInstance.dateFormat = newValue
-        }
-    }
 
     public var level = EchoLevel.Trace
     public static var level: EchoLevel {
@@ -121,15 +83,6 @@ public struct Echo {
         }
         set {
             sharedInstance.level = newValue
-        }
-    }
-    public var levelFlags = [EchoLevel.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]
-    public static var levelFlags: [EchoLevel: String] {
-        get {
-            return sharedInstance.levelFlags
-        }
-        set {
-            sharedInstance.levelFlags = newValue
         }
     }
 
@@ -152,17 +105,26 @@ public struct Echo {
         }
     }
     private func log<T>(value: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
-        dateFormatter.dateFormat = dateFormat // Dammit! Currently we can't have structs where a computed property and a static
-                                              // computed property have the same name 🔪🚑🔫💣💀!!!
-                                              // TODO: 💩 Clean that ASAP
+        var log = format.map({ component -> String in
+            switch component {
+            case .Datetime(let format):
+                self.dateFormatter.dateFormat = format
+                return self.dateFormatter.stringFromDate(NSDate())
+            case .Flag(let flags):
+                return  (flags as [EchoLevel: String])[level] ?? "" // FIXME: Type can't be inferred ???
+            case .Filename:
+                return "\(file)".lastPathComponent
+            case .Function:
+                return "\(function)"
+            case .Line:
+                return "\(line)"
+            case .Message:
+                return "\(value)"
+            case .Separator(let separator):
+                return separator
+            }
+        }).reduce("", combine: +)
 
-        var log = format
-        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.DateTime)", withString: dateFormatter.stringFromDate(NSDate()))
-        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Flag)", withString: levelFlags[level] ?? "\(level)")
-        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Filename)", withString: "\(file)".lastPathComponent)
-        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Function)", withString: "\(function)")
-        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Line)", withString: "\(line)")
-        log = log.stringByReplacingOccurrencesOfString("\(EchoComponent.Message)", withString: "\(value)")
         println(log)
     }
 
