@@ -95,15 +95,7 @@ If Echo level is `<=` .Trace, Echo print the returned value to the console.
 
 ### Customize Echo format
 
-Echo format is an array of `EchoComponent` that define how Echo logs are print to the console.
-
-* `EchoComponent.DateTime`: Echo date and time.
-* `EchoComponent.Flag`: Flag that identify Echo level.
-* `EchoComponent.Filename`: Caller's filename.
-* `EchoComponent.Function`: Caller's function name.
-* `EchoComponent.Line`: Caller's line.
-* `EchoComponent.Message`: Message to print.
-* `EchoComponent.Separator`: Separator.
+Echo format is an array of `EchoComponent` that define how Echo logs are print to the console. 
 
 By default Echo format is set to:
 
@@ -120,6 +112,16 @@ Echo.format = [
   .Message
 ]
 ```
+
+Available `EchoComponent` values:
+
+* `EchoComponent.Datetime(format: String)`: cf. `NSDateFormatter.dateFormat`
+* `EchoComponent.Flag(flags: [EchoLevel: EchoFlag])`
+* `EchoComponent.Filename`
+* `EchoComponent.Function`
+* `EchoComponent.Line`
+* `EchoComponent.Message`
+* `EchoComponent.Separator(String)`
 
 ---
 
