@@ -17,7 +17,7 @@ echo.format = [
     .Separator("("),
     .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
     .Separator(") ["),
-    .Datetime(format: "yyyy-MM-dd HH:mm:ss.SSS"),
+    .Datetime(format: "HH:mm:ss.SSS"),
     .Separator("] ["),
     .Filename,
     .Separator(":"),
