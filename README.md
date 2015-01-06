@@ -11,7 +11,7 @@ things
 Now you Echo `Echo.info("beautiful things")`:
 
 ```
-💡 [11:05:58.013] [AppDelegate.swift:21] beautiful things
+💡 [2014-12-08 10:20:01.000] [AppDelegate.swift:21] beautiful things
 ```
 
 ## Features
@@ -57,12 +57,12 @@ Echo.trace("Fatal")
 Because Echo level is set to `.Trace` by default, all these logs are print to the console.
 
 ```
-💊 [11:06:03.753] [AppDelegate.swift:20] Trace
-☕️ [11:06:03.754] [AppDelegate.swift:21] Debug
-💡 [11:06:03.754] [AppDelegate.swift:22] Info
-⚠️ [11:06:03.755] [AppDelegate.swift:23] Warn
-❌ [11:06:03.755] [AppDelegate.swift:23] Error
-💣 [11:06:03.755] [AppDelegate.swift:25] Fatal
+💊 [2014-12-08 10:20:01.000] [AppDelegate.swift:20] Trace
+☕️ [2014-12-08 10:20:01.000] [AppDelegate.swift:21] Debug
+💡 [2014-12-08 10:20:01.000] [AppDelegate.swift:22] Info
+⚠️ [2014-12-08 10:20:01.000] [AppDelegate.swift:23] Warn
+❌ [2014-12-08 10:20:01.000] [AppDelegate.swift:23] Error
+💣 [2014-12-08 10:20:01.000] [AppDelegate.swift:25] Fatal
 ```
 
 Naturally you can change Echo level to print only messages with a log level `>=`. So if you set Echo level like that:
@@ -90,7 +90,7 @@ Echo.trace({ () -> Double in
 If Echo level is `<=` .Trace, Echo print the returned value to the console.
 
 ```
-💊 [11:06:03.753] [AppDelegate.swift:20] 2.23606797749979
+💊 [2014-12-08 10:20:01.000] [AppDelegate.swift:20] 2.23606797749979
 ```
 
 ### Customize Echo format
@@ -103,7 +103,7 @@ By default Echo format is set to:
 Echo.format = [
   .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
   .Separator(" ["),
-  .Datetime(format: "HH:mm:ss.SSS"),
+  .Datetime(format: "yyyy-MM-dd HH:mm:ss.SSS"),
   .Separator("] ["),
   .Filename,
   .Separator(":"),
