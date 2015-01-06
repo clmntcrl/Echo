@@ -80,7 +80,7 @@ Echo also provide the possiblity to disable message logging by setting Echo leve
 Echo `trace`, `debug`, `info`, `warn`, `error` and `fatal` methods can also be used to limit code execution in the same way you limit log printing.
 
 ```swift
-Echo.trace({ () -> Double
+Echo.trace({ () -> Double in
   let AB = 1.0
   let AC = 2.0
   return sqrt(AB*AB + AC*AC) // BC
