@@ -1,11 +1,5 @@
-//
-//  Echo.swift
-//  Echo
-//
-//  Created by clmntcrl on 03/12/2014.
-//  Copyright (c) 2014 Clément Cyril. All rights reserved.
-//
-
+//  Echo by Clément Cyril - @clmntcrl - http://clmntcrl.io/
+//  Copyright 2015 Clément Cyril. See LICENSE.
 
 import Foundation
 

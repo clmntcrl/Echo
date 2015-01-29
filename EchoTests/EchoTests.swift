@@ -1,11 +1,5 @@
-//
-//  EchoTests.swift
-//  EchoTests
-//
-//  Created by clmntcrl on 04/12/2014.
-//  Copyright (c) 2014 Clément Cyril. All rights reserved.
-//
-
+//  Echo by Clément Cyril - @clmntcrl - http://clmntcrl.io/
+//  Copyright 2014 Clément Cyril. See LICENSE.
 
 import XCTest
 
