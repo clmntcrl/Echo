@@ -9,11 +9,6 @@
 
 import Foundation
 
-
-// MARK: Echo types
-
-public typealias EchoFlag = String
-
 // MARK: Echo levels
 
 public enum EchoLevel: UInt, Comparable {
@@ -40,7 +35,7 @@ public func ==(lhs: EchoLevel, rhs: EchoLevel) -> Bool {
 public enum EchoComponent {
 
     case Datetime(format: String)
-    case Flag(flags: [EchoLevel: EchoFlag])
+    case Flag(flags: [EchoLevel: String])
     case Filename
     case Function
     case Line
