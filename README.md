@@ -8,7 +8,7 @@ Before you `println("things")`:
 things
 ```
 
-Now you Echo `Echo.info("beautiful things")`:
+Now you Echo `echo.info("beautiful things")`:
 
 ```
 💡 [2014-12-08 10:20:01.000] [AppDelegate.swift:21] beautiful things
@@ -32,13 +32,11 @@ Then:
 import Echo
 ```
 
-Instanciate an Echo or just use the shared instance:
+And just instanciate an Echo:
 
 ```swift
 var echo = Echo()
 echo.info("info")
-
-Echo.info("info")
 ```
 
 ### Echo levels
@@ -46,12 +44,12 @@ Echo.info("info")
 With Echo, each log level has its own method:
 
 ```swift
-Echo.trace("Trace")
-Echo.debug("Debug")
-Echo.info("Info")
-Echo.warn("Warn")
-Echo.error("Error")
-Echo.trace("Fatal")
+echo.trace("Trace")
+echo.debug("Debug")
+echo.info("Info")
+echo.warn("Warn")
+echo.error("Error")
+echo.trace("Fatal")
 ```
 
 Because Echo level is set to `.Trace` by default, all these logs are print to the console.
@@ -68,7 +66,7 @@ Because Echo level is set to `.Trace` by default, all these logs are print to th
 Naturally you can change Echo level to print only messages with a log level `>=`. So if you set Echo level like that:
 
 ```swift
-Echo.level = .Warn
+echo.level = .Warn
 ```
 
 You will only show *warn*, *error* and *fatal* messages.
@@ -80,7 +78,7 @@ Echo also provide the possiblity to disable message logging by setting Echo leve
 Echo `trace`, `debug`, `info`, `warn`, `error` and `fatal` methods can also be used to limit code execution in the same way you limit log printing.
 
 ```swift
-Echo.trace({ () -> Double in
+echo.trace({ () -> Double in
   let AB = 1.0
   let AC = 2.0
   return sqrt(AB*AB + AC*AC) // BC
@@ -100,7 +98,7 @@ Echo format is an array of `EchoComponent` that define how Echo logs are print t
 By default Echo format is set to:
 
 ```swift
-Echo.format = [
+echo.format = [
   .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
   .Separator(" ["),
   .Datetime(format: "yyyy-MM-dd HH:mm:ss.SSS"),
