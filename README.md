@@ -19,6 +19,7 @@ Now you Echo `echo.info("beautiful things")`:
 - [x] Log levels
 - [x] Selective code execution
 - [x] Customizable log format
+- [x] Use custom output
 
 ---
 
@@ -120,6 +121,16 @@ Available `EchoComponent` values:
 * `EchoComponent.Line`
 * `EchoComponent.Message`
 * `EchoComponent.Separator(String)`
+
+### Use custom output
+
+If the console is not enought, you can provide you own logging method to Echo to use custom log destination like file, web services, notification center, ... The only thing to do is to set `reflect: (String) -> Void` Echo instance variable with you own logging closure.
+
+By default:
+
+```swift
+echo.reflect = { println($0) }
+```
 
 ---
 
