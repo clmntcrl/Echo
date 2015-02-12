@@ -124,7 +124,7 @@ Available `EchoComponent` values:
 
 ### Use custom output
 
-If the console is not enought, you can provide you own logging method to Echo to use custom log destination like file, web services, notification center, ... The only thing to do is to set `reflect: (String) -> Void` Echo instance variable with you own logging closure.
+If the console is not enough, you can provide you own logging method to Echo to use custom log destination like file, web services, notification center, ... The only thing to do is to set `reflect: (String) -> Void` Echo instance variable with you own logging closure.
 
 By default:
 
