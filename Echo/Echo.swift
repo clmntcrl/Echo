@@ -38,11 +38,9 @@ public enum EchoComponent {
 
 }
 
-// MARK: Echo log controller
+// MARK: Echo
 
 public struct Echo {
-
-    private static var sharedInstance = Echo()
 
     public var format: [EchoComponent] = [
         .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
@@ -55,46 +53,20 @@ public struct Echo {
         .Separator("] "),
         .Message
     ]
-    public static var format: [EchoComponent] {
-        get {
-            return sharedInstance.format
-        }
-        set {
-            sharedInstance.format = newValue
-        }
-    }
-    private var dateFormatter = NSDateFormatter()
+    public var level: EchoLevel = .Trace
+    public var reflect: (String) -> Void = { println($0) }
 
-    public var level = EchoLevel.Trace
-    public static var level: EchoLevel {
-        get {
-            return sharedInstance.level
-        }
-        set {
-            sharedInstance.level = newValue
-        }
-    }
+    private let dateFormatter = NSDateFormatter()
 
 
     public init() {
-        
     }
 
-    private func isLoggable(level: EchoLevel) -> Bool {
+    public func reflectable(level: EchoLevel) -> Bool {
         return level >= self.level
     }
-    private func echo<T>(value: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
-        if isLoggable(level) {
-            log(value, level, file, function, line)
-        }
-    }
-    private func echo<T>(closure: () -> T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
-        if isLoggable(level) {
-            log(closure(), level, file, function, line)
-        }
-    }
-    private func log<T>(value: T, _ level: EchoLevel, _ file: StaticString, _ function: StaticString, _ line: UWord) {
-        var log = format.map({ component -> String in
+    public func compose<T>(level : EchoLevel, value: T, file: StaticString, function: StaticString, line: UWord) -> String {
+        return format.map({ component -> String in
             switch component {
             case .Datetime(let format):
                 self.dateFormatter.dateFormat = format
@@ -113,128 +85,67 @@ public struct Echo {
                 return separator
             }
         }).reduce("", combine: +)
-
-        println(log)
     }
 
-}
+    // MAK: Echo values
 
-// MARK: Echo trace methods
-
-extension Echo {
-
-    public func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(value, .Trace, file, function, line)
-    }
-    public func trace<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(closure, .Trace, file, function, line)
+    private func echo<T>(level: EchoLevel, value: T, file: StaticString, function: StaticString, line: UWord) -> String? {
+        if reflectable(level) {
+            let log = compose(level, value: value, file: file, function: function, line: line)
+            reflect(log)
+            return log
+        }
+        return nil
     }
 
-    public static func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(value, .Trace, file, function, line)
+    public func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Trace, value: value, file: file, function: function, line: line)
     }
-    public static func trace<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(closure, .Trace, file, function, line)
+    public func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Debug, value: value, file: file, function: function, line: line)
     }
-
-}
-
-// MARK: Echo debug methods
-
-extension Echo {
-    
-    public func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(value, .Debug, file, function, line)
+    public func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Info, value: value, file: file, function: function, line: line)
     }
-    public func debug<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(closure, .Debug, file, function, line)
+    public func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Warn, value: value, file: file, function: function, line: line)
     }
-
-    public static func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(value, .Debug, file, function, line)
+    public func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Error, value: value, file: file, function: function, line: line)
     }
-    public static func debug<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(closure, .Debug, file, function, line)
+    public func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Fatal, value: value, file: file, function: function, line: line)
     }
 
-}
+    // MAK: Echo closures
+    // TODO: Find a better way for selective code execution to avoid code repetition
 
-// MARK: Echo info methods
-
-extension Echo {
-
-    public func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(value, .Info, file, function, line)
-    }
-    public func info<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(closure, .Info, file, function, line)
-    }
-
-    public static func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(value, .Info, file, function, line)
-    }
-    public static func info<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(closure, .Info, file, function, line)
+    private func echo<T>(level: EchoLevel, closure: () -> T, file: StaticString, function: StaticString, line: UWord) -> String? {
+        if reflectable(level) {
+            let log = compose(level, value: closure(), file: file, function: function, line: line)
+            reflect(log)
+            return log
+        }
+        return nil
     }
 
-}
-
-// MARK: Echo warn methods
-
-extension Echo {
-
-    public func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(value, .Warn, file, function, line)
+    public func trace<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Trace, closure: closure, file: file, function: function, line: line)
     }
-    public func warn<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(closure, .Warn, file, function, line)
+    public func debug<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Debug, closure: closure, file: file, function: function, line: line)
     }
-
-    public static func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(value, .Warn, file, function, line)
+    public func info<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Info, closure: closure, file: file, function: function, line: line)
     }
-    public static func warn<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(closure, .Warn, file, function, line)
+    public func warn<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Warn, closure: closure, file: file, function: function, line: line)
     }
-
-}
-
-// MARK: Echo error methods
-
-extension Echo {
-
-    public func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(value, .Error, file, function, line)
+    public func error<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Error, closure: closure, file: file, function: function, line: line)
     }
-    public func error<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(closure, .Error, file, function, line)
-    }
-
-    public static func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(value, .Error, file, function, line)
-    }
-    public static func error<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(closure, .Error, file, function, line)
-    }
-
-}
-
-// MARK: Echo fatal methods
-
-extension Echo {
-
-    public func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(value, .Fatal, file, function, line)
-    }
-    public func fatal<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        echo(closure, .Fatal, file, function, line)
-    }
-
-    public static func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(value, .Fatal, file, function, line)
-    }
-    public static func fatal<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) {
-        sharedInstance.echo(closure, .Fatal, file, function, line)
+    public func fatal<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
+        return echo(.Fatal, closure: closure, file: file, function: function, line: line)
     }
 
 }
