@@ -30,13 +30,11 @@ echo.level = .Info
 
 // Now, Echo like you println
 
-echo.warn("warn") // using an echo instance
-
-Echo.info("trace") // or just use the echo shared instance
+echo.warn("warn")
 
 // Want more?
 
-Echo.debug({ () -> Double in
+echo.debug({ () -> Double in
     let AB = 1.0
     let AC = 2.0
     return sqrt(AB*AB + AC*AC) // BC
