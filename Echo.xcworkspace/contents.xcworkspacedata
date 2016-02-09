@@ -2,7 +2,13 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:Echo.playground">
+      location = "group:README.md">
+   </FileRef>
+   <FileRef
+      location = "group:LICENSE">
+   </FileRef>
+   <FileRef
+      location = "group:/Users/clmntcrl/Documents/Echo/EchoPlayground.playground">
    </FileRef>
    <FileRef
       location = "container:Echo.xcodeproj">

@@ -3,149 +3,196 @@
 
 import Foundation
 
-// MARK: Echo levels
+// MARK: - Echo levels
 
 public enum EchoLevel: UInt, Comparable {
 
-    case Trace
-    case Debug
-    case Info
-    case Warn
-    case Error
-    case Fatal
-    case Off
-
+    case Trace, Debug, Info, Warn, Error, Fatal, Off
 }
-
 public func <(lhs: EchoLevel, rhs: EchoLevel) -> Bool {
     return lhs.rawValue < rhs.rawValue
 }
-public func ==(lhs: EchoLevel, rhs: EchoLevel) -> Bool {
-    return lhs.rawValue == rhs.rawValue
-}
 
-// MARK: Echo components
+// MARK: - Echo components
 
 public enum EchoComponent {
 
-    case Datetime(format: String)
-    case Flag(flags: [EchoLevel: String])
+    case Name
+    case Datetime(String)
+    case Flag([EchoLevel: String])
     case Filename
     case Function
     case Line
     case Message
     case Separator(String)
-
 }
 
-// MARK: Echo
+// MARK: - Propagator protocol
 
-public struct Echo {
+public protocol Propagator_ {
 
-    public var format: [EchoComponent] = [
-        .Flag(flags: [.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣", .Off: "😶"]),
-        .Separator(" ["),
-        .Datetime(format: "yyyy-MM-dd HH:mm:ss.SSS"),
-        .Separator("] ["),
-        .Filename,
-        .Separator(":"),
-        .Line,
-        .Separator("] "),
-        .Message
-    ]
+    var name: String { get }
+    var format: [EchoComponent] { get }
+    var level: EchoLevel { get set }
+
+    var reverb: String -> Void { get }
+
+    func propagate(level: EchoLevel, datetime: NSDate, filename: String, function: String, line: Int, source: () -> Any)
+
+    func trace(value: Any, file: String, function: String, line: Int)
+    func trace(file: String, function: String, line: Int, closure: () -> Any)
+    func debug(value: Any, file: String, function: String, line: Int)
+    func debug(file: String, function: String, line: Int, closure: () -> Any)
+    func info(value: Any, file: String, function: String, line: Int)
+    func info(file: String, function: String, line: Int, closure: () -> Any)
+    func warn(value: Any, file: String, function: String, line: Int)
+    func warn(file: String, function: String, line: Int, closure: () -> Any)
+    func error(value: Any, file: String, function: String, line: Int)
+    func error(file: String, function: String, line: Int, closure: () -> Any)
+    func fatal(value: Any, file: String, function: String, line: Int)
+    func fatal(file: String, function: String, line: Int, closure: () -> Any)
+}
+
+// MARK: Echo propagator protocol extension
+
+private let defaultEchoFormat: [EchoComponent] = [.Flag([.Trace: "💊", .Debug:  "☕️", .Info: "💡", .Warn: "⚠️", .Error: "❌", .Fatal: "💣"]),
+                                                  .Separator(" ["),
+                                                  .Datetime("HH:mm:ss.SSS"),
+                                                  .Separator("] ["),
+                                                  .Filename,
+                                                  .Separator(":"),
+                                                  .Line,
+                                                  .Separator("] "),
+                                                  .Message]
+private let dateFormatter = NSDateFormatter()
+private let echoQueue = dispatch_queue_create("io.clmntcrl.echo.queue", .None)
+
+public extension Propagator_ {
+
+    var name: String { return String(Self) }
+    var format: [EchoComponent] { return defaultEchoFormat }
+
+    func propagate(level: EchoLevel, datetime: NSDate, filename: String, function: String, line: Int, source: () -> Any) {
+        guard level >= self.level else {
+            return
+        }
+
+        dispatch_async(echoQueue) {
+            self.reverb(self.format.map {
+                switch $0 {
+                case .Name:
+                    return self.name
+                case .Datetime(let format):
+                    dateFormatter.dateFormat = format
+                    return dateFormatter.stringFromDate(datetime)
+                case .Flag(let flags):
+                    return  flags[level] ?? ""
+                case .Filename:
+                    return filename
+                case .Function:
+                    return function
+                case .Line:
+                    return String(line)
+                case .Message:
+                    return "\(source())"
+                case .Separator(let s):
+                    return s
+                }
+            }.reduce("", combine: +))
+        }
+    }
+
+    func trace(value: Any, file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__) {
+        propagate(.Trace, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: { value })
+    }
+    func trace(file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__, closure: () -> Any) {
+        propagate(.Trace, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: closure)
+    }
+    func debug(value: Any, file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__) {
+        propagate(.Debug, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: { value })
+    }
+    func debug(file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__, closure: () -> Any) {
+        propagate(.Debug, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: closure)
+    }
+    func info(value: Any, file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__) {
+        propagate(.Info, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: { value })
+    }
+    func info(file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__, closure: () -> Any) {
+        propagate(.Info, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: closure)
+    }
+    func warn(value: Any, file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__) {
+        propagate(.Warn, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: { value })
+    }
+    func warn(file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__, closure: () -> Any) {
+        propagate(.Warn, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: closure)
+    }
+    func error(value: Any, file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__) {
+        propagate(.Error, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: { value })
+    }
+    func error(file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__, closure: () -> Any) {
+        propagate(.Error, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: closure)
+    }
+    func fatal(value: Any, file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__) {
+        propagate(.Fatal, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: { value })
+    }
+    func fatal(file: String = __FILE__, function: String = __FUNCTION__, line: Int = __LINE__, closure: () -> Any) {
+        propagate(.Fatal, datetime: NSDate(), filename: NSURL(string: file)?.lastPathComponent ?? "", function: function, line: line, source: closure)
+    }
+}
+
+// MARK: - Echo propagator
+
+public struct Propagator: Propagator_ {
+
+    public let name: String
+    public let format: [EchoComponent]
     public var level: EchoLevel = .Trace
-    public var reflect: (String) -> Void = { println($0) }
 
-    private let dateFormatter = NSDateFormatter()
+    public let reverb: String -> Void
 
-
-    public init() {
+    public init(name: String, format: [EchoComponent], reverb: String -> Void) {
+        self.name = name
+        self.format = format
+        self.reverb = reverb
     }
-
-    public func reflectable(level: EchoLevel) -> Bool {
-        return level >= self.level
-    }
-    public func compose<T>(level : EchoLevel, value: T, file: StaticString, function: StaticString, line: UWord) -> String {
-        return format.map({ component -> String in
-            switch component {
-            case .Datetime(let format):
-                self.dateFormatter.dateFormat = format
-                return self.dateFormatter.stringFromDate(NSDate())
-            case .Flag(let flags):
-                return  (flags as [EchoLevel: String])[level] ?? "" // FIXME: Type can't be inferred ???
-            case .Filename:
-                return "\(file)".lastPathComponent
-            case .Function:
-                return "\(function)"
-            case .Line:
-                return "\(line)"
-            case .Message:
-                return "\(value)"
-            case .Separator(let separator):
-                return separator
-            }
-        }).reduce("", combine: +)
-    }
-
-    // MAK: Echo values
-
-    private func echo<T>(level: EchoLevel, value: T, file: StaticString, function: StaticString, line: UWord) -> String? {
-        if reflectable(level) {
-            let log = compose(level, value: value, file: file, function: function, line: line)
-            reflect(log)
-            return log
-        }
-        return nil
-    }
-
-    public func trace<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Trace, value: value, file: file, function: function, line: line)
-    }
-    public func debug<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Debug, value: value, file: file, function: function, line: line)
-    }
-    public func info<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Info, value: value, file: file, function: function, line: line)
-    }
-    public func warn<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Warn, value: value, file: file, function: function, line: line)
-    }
-    public func error<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Error, value: value, file: file, function: function, line: line)
-    }
-    public func fatal<T>(value: T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Fatal, value: value, file: file, function: function, line: line)
-    }
-
-    // MAK: Echo closures
-    // TODO: Find a better way for selective code execution to avoid code repetition
-
-    private func echo<T>(level: EchoLevel, closure: () -> T, file: StaticString, function: StaticString, line: UWord) -> String? {
-        if reflectable(level) {
-            let log = compose(level, value: closure(), file: file, function: function, line: line)
-            reflect(log)
-            return log
-        }
-        return nil
-    }
-
-    public func trace<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Trace, closure: closure, file: file, function: function, line: line)
-    }
-    public func debug<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Debug, closure: closure, file: file, function: function, line: line)
-    }
-    public func info<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Info, closure: closure, file: file, function: function, line: line)
-    }
-    public func warn<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Warn, closure: closure, file: file, function: function, line: line)
-    }
-    public func error<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Error, closure: closure, file: file, function: function, line: line)
-    }
-    public func fatal<T>(closure: () -> T, file: StaticString = __FILE__, function: StaticString = __FUNCTION__, line: UWord = __LINE__) -> String? {
-        return echo(.Fatal, closure: closure, file: file, function: function, line: line)
-    }
-
 }
+
+// MARK: - Some echo propagators
+
+// MARK: Console
+
+public func consolePropagator(name: String = "Console", format: [EchoComponent] = defaultEchoFormat) -> Propagator {
+    return Propagator(name: name, format: format) { print($0) }
+}
+
+public func batmanConsolePropagator() -> Propagator {
+    let batmanEchoFormat: [EchoComponent] = [.Separator("I'm Batman! ["),
+                                             .Datetime("HH:mm:ss.SSS"),
+                                             .Separator("] ["),
+                                             .Filename,
+                                             .Separator(":"),
+                                             .Line,
+                                             .Separator("]")]
+    return consolePropagator("Batman", format: batmanEchoFormat)
+}
+
+// MARK: Local notification
+
+#if os(iOS)
+import UIKit
+
+public func localNotificationPropagator(name: String = "Console", format: [EchoComponent] = defaultEchoFormat) -> Propagator {
+    UIApplication.sharedApplication()
+                 .registerUserNotificationSettings(UIUserNotificationSettings(forTypes: .Alert, categories: .None))
+
+    return Propagator(name: name, format: format) {
+        let notification = UILocalNotification()
+        if #available(iOS 8.2, *) {
+            notification.alertTitle = "Echo"
+        }
+        notification.alertBody = $0
+        notification.hasAction = false
+        UIApplication.sharedApplication().presentLocalNotificationNow(notification)
+    }
+}
+#endif
